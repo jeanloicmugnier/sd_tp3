@@ -2,32 +2,26 @@
  * File:   main.c
  * Author: Jean-Loïc Mugnier <mugnier at polytech.unice.fr>
  *
- * Created on June 22, 2016, 9:47 PM
+ * Created on July 13, 2016, 11:03 AM
  */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "activity.h"
 
 /*
- * The client and server program must include (#include "rpcprog.h"
-compile the client code:
-cc -c  rpcprog.c
-compile the client stub:
-cc -c  rpcprog_clnt.c
-compile the XDR filter:
-cc -c  rpcprog_xdr.c
-build the client executable:
-cc -o rpcprog rpcprog.o rpcprog_clnt.o rpcprog_xdr.c
-compile the service procedures:
-cc -c  rpcsvc.c
-compile the server stub:
-cc -c  rpcprog_svc.c
-build the server executable:
-cc -o rpcsvc rpcsvc.o rpcprog_svc.o rpcprog_xdr.c
-Now simply run the programs rpcprog and rpcsvc on the client and server respectively.
-
+ * 
  */
 int main(int argc, char** argv) {
+
+    char* file_name = "test.txt";
+    int nb_writes = 10; // each process need to write 10 times.
+    int nb_proc = 2; // each process need to write 10 times.
+    int gap_btw_proc = 4; // time between the arrival of 2 processes. bulk arrival.
+    int slp_tm_proc = 2; // time between the arrival of 2 processes. bulk arrival.
+    //    void * routine;
+    //    void * params;
+    create_processes(nb_proc, file_name, nb_writes, slp_tm_proc, gap_btw_proc);
 
     return (EXIT_SUCCESS);
 }

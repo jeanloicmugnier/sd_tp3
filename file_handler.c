@@ -28,7 +28,7 @@ void write_in_file(char * path, char* mode, char* cont) {
  * @param path
  * @param mode
  */
-void open_file(char * path, char* mode) {
+FILE * open_file(char * path, char* mode) {
     FILE *f = fopen(path, mode);
     if (f == NULL) {
         printf("Error opening file!\n");
