@@ -19,6 +19,8 @@ extern "C" {
 #include <time.h>
 #include "process.h"
 #include "coordinator.h"
+#include <sys/types.h>
+#include <signal.h>
 
     typedef struct ExecParam {
         char* filename;

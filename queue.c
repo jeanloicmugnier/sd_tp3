@@ -3,7 +3,7 @@
 void create_queue(Queue *q, int capacity) {
 
     q->capacity = capacity;
-    q->process_id = (pid_t*) malloc(q->capacity * sizeof (pid_t));
+    q->socket_fd = (int*) malloc(q->capacity * sizeof (int));
     q->first = 0;
     q->last = -1;
     q->nb = 0;
@@ -17,7 +17,7 @@ int add(Queue *q, int value) {
         return -1;
     } else {
         q->last++;
-        q->process_id[q->last] = value;
+        q->socket_fd[q->last] = value;
         q->nb++;
     }
     return 0;
@@ -25,19 +25,19 @@ int add(Queue *q, int value) {
 
 int pop(Queue *q) {
 
-    int tmp = q->process_id[q->first];
+    int tmp = q->socket_fd[q->first];
 
     for (int i = 1; i < q->nb; i++) {
-        q->process_id[i - 1] = q->process_id[i];
+        q->socket_fd[i - 1] = q->socket_fd[i];
     }
-    
+
     q->nb--;
     return tmp;
 
 }
 
 int head(Queue *q) {
-    return q->process_id[q->first];
+    return q->socket_fd[q->first];
 }
 
 int empty(Queue *q) {
@@ -56,7 +56,7 @@ void show(Queue *q) {
 
     for (count = 0, i = q->first; count < q->nb; count++) {
 
-        printf("%.2d\t", q->process_id[i++]);
+        printf("%.2d\t", q->socket_fd[i++]);
 
         if (i == q->capacity)
             i = 0;

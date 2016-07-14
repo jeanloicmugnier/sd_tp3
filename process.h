@@ -21,7 +21,6 @@ extern "C" {
     static const char* REQUEST = "REQUEST";
     static const char* RELEASE = "RElEASE";
 
-    int send(Demand * d);
     char* get_sentence(char* thread_id);
     char* routine(char * file_name, int sleep_time);
 

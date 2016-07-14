@@ -5,22 +5,9 @@
 #include <sys/types.h>
 #include "coordinator.h"
 #include "file_handler.h"
+#include <sys/socket.h>
 
-int request() {
-    Demand * d = malloc(sizeof (Demand));
-    d->process_id = getpid();
-    d->will = REQUEST;
-    send(d);
-    return 0;
-}
 
-int release() {
-    Demand * d = malloc(sizeof (Demand));
-    d->process_id = getpid();
-    d->will = RELEASE;
-    send(d);
-    return 0;
-}
 
 char* get_sentence(char* thread_id) {
     char* string = malloc(50);
@@ -42,16 +29,18 @@ char* get_sentence(char* thread_id) {
  */
 char* routine(char * file_name, int sleep_time) {
     // get coord id (parent)
+    int sd = initialize_socket();
     sleep(sleep_time);
     pid_t this_pid = getpid();
     //    printf("pid %lu", this_pid);
     //
     Demand * d = malloc(sizeof (Demand));
-    d->process_id = this_pid;
-    d->will = REQUEST;
+    //    d->process_id = this_pid;
+    //    d->will = REQUEST;
     //    d.process_id = getpid();
     //    //    d->will = request;
-    send(d);
+    send(sd, REQUEST, sizeof (const char*), 0);
+
     //    printf("after sending routine");
     //
     char * id = malloc(sizeof (long unsigned) + 1);
@@ -62,6 +51,7 @@ char* routine(char * file_name, int sleep_time) {
     id = get_sentence(id);
     //    printf("before write in file");
     write_in_file(file_name, "a", id);
+    send(sd, RELEASE, sizeof (const char*), 0);
     //    printf("after write in file");
     return 0;
 }

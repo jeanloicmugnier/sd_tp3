@@ -19,7 +19,7 @@ extern "C" {
 
     typedef struct Queue {
         int capacity;
-        pid_t* process_id;
+        int* socket_fd;
         int first;
         int last;
         int nb;

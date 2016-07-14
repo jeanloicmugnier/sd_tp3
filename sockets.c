@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <stdbool.h>
 #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
 
 #define TRUE   1
@@ -66,9 +67,9 @@ int wait_event(int* master_socket, struct sockaddr_in * address, fd_set* readfds
             //            printf("New connection , socket fd is %d , ip is : %s , port : %d \n", new_socket, inet_ntoa(address.sin_addr), ntohs(address.sin_port));
             //
             //            //send new connection greeting message
-            if (send(*new_socket, message, strlen(message), 0) != strlen(message)) {
-                perror("send");
-            }
+            //            if (send(*new_socket, message, strlen(message), 0) != strlen(message)) {
+            //                perror("send");
+            //            }
 
             //            puts("Welcome message sent successfully");
 
@@ -76,7 +77,7 @@ int wait_event(int* master_socket, struct sockaddr_in * address, fd_set* readfds
             for (i = 0; i < max_clients; i++) {
                 //if position is empty
                 if (client_socket[i] == 0) {
-                    client_socket[i] = new_socket;
+                    client_socket[i] = *new_socket;
                     printf("Adding to list of sockets as %d\n", i);
 
                     break;
@@ -98,6 +99,8 @@ int wait_event(int* master_socket, struct sockaddr_in * address, fd_set* readfds
                     //Close the socket and mark as 0 in list for reuse
                     close(sd);
                     client_socket[i] = 0;
+                    *master_socket = *new_socket;
+                    return buffer;
                 }//Echo back the message that came in
                 else {
                     //set the string terminating NULL byte on the end of the data read
@@ -109,21 +112,40 @@ int wait_event(int* master_socket, struct sockaddr_in * address, fd_set* readfds
     }
 }
 
-int initialize_master() {
-    return 0;
+int initialize_socket() {
+    int sockfd;
+    int rcv_num = 1;
+    int num_to_check;
+    bool check_result;
+    struct sockaddr_in sender_addr;
+    // Checks errors
+    if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+        perror("socket error");
+        exit(1);
+    }
+    // Opening communication on TCP protocol
+    sender_addr.sin_family = AF_INET;
+    sender_addr.sin_port = htons(PORT);
+    sender_addr.sin_addr.s_addr = INADDR_ANY;
+    memset(sender_addr.sin_zero, '\0', sizeof (sender_addr.sin_zero));
+    // Checks errors
+    if ((connect(sockfd, (struct sockaddr *) &sender_addr, sizeof (sender_addr))) == -1) {
+        perror("connect error");
+        exit(1);
+    }
+    return socket;
+
 }
 
-int initialize_sockets(int nb_clients) {
+int initialize_sockets(int* master_socket, struct sockaddr_in * address, int nb_clients, int* client_socket) {
     int opt = TRUE;
-    int master_socket, addrlen, new_socket, max_clients = 1, activity, i, valread, sd;
-    int* client_socket = malloc(sizeof (int)*nb_clients);
+    int addrlen, new_socket, max_clients = 1, activity, i, valread, sd;
+
     int max_sd;
-    struct sockaddr_in address;
 
     char buffer[1025]; //data buffer of 1K
 
     //set of socket descriptors
-    fd_set readfds;
 
     //a message
     char *message = "ECHO Daemon v1.0 \r\n";
@@ -134,44 +156,40 @@ int initialize_sockets(int nb_clients) {
     }
 
     //create a master socket
-    if ((master_socket = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+    if ((*master_socket = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("socket failed");
         exit(EXIT_FAILURE);
     }
 
     //set master socket to allow multiple connections , this is just a good habit, it will work without this
-    if (setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &opt, sizeof (opt)) < 0) {
+    if (setsockopt(*master_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &opt, sizeof (opt)) < 0) {
         perror("setsockopt");
         exit(EXIT_FAILURE);
     }
 
     //type of socket created
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
+    address->sin_family = AF_INET;
+    address->sin_addr.s_addr = INADDR_ANY;
+    address->sin_port = htons(PORT);
 
     //bind the socket to localhost port 8888
-    if (bind(master_socket, (struct sockaddr *) &address, sizeof (address)) < 0) {
+    if (bind(*master_socket, (struct sockaddr *) address, sizeof (*address)) < 0) {
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
     printf("Listener on port %d \n", PORT);
 
     //try to specify maximum of 3 pending connections for the master socket
-    if (listen(master_socket, 3) < 0) {
+    if (listen(*master_socket, 3) < 0) {
         perror("listen");
         exit(EXIT_FAILURE);
     }
 
     //accept the incoming connection
-    addrlen = sizeof (address);
+    //    addrlen = sizeof (*address);
     puts("Waiting for connections ...");
 
 
 
     return 0;
-}
-
-int main(int argc, char *argv[]) { //PARAM nb_clientes
-
 }

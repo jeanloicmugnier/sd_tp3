@@ -1,3 +1,9 @@
+#include <sys/types.h>
+#include <signal.h>
+
+#include <sys/types.h>
+#include <sys/wait.h>
+
 
 #include "activity.h"
 
@@ -66,8 +72,11 @@ int start_seq(int k, char* file_name, int nb_writes, int slp_tm_proc, int gap_bt
         }
         //        printf("this pid: %d\n", this);
         if (this) {// child not coordenador
-            printf("pid %d ROUTINE\n", getpid());
-            //            routine(file_name, slp_tm_proc);
+            printf("pid %lu ROUTINE\n", (long) getpid());
+            while (nb_writes--) {
+                printf("pid %lu STILL %d", (long) getpid(), nb_writes);
+                routine(file_name, slp_tm_proc);
+            }
             return 0;
         }
         if (!this) {//parent process
