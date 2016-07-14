@@ -1,4 +1,4 @@
-#include <clock.h>
+
 
 double set_beg_time(clk *clk) {
     clk->beg = clock();
@@ -18,8 +18,8 @@ char * format_time(double diff) {
     char str[20];
     sprintf(str, "%f", diff);
     char * ex = "exec time: ";
-    char * con = concat(ex, str);
-    return con;
+    strcat(ex, str);
+    return ex;
 }
 
 char print_time(double time) {

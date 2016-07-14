@@ -1,7 +1,10 @@
 #include "process.h"
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h> 
+#include <sys/types.h>
+#include "coordinator.h"
 #include "file_handler.h"
-#include <stdlib.h>
-#include "communication.h"
 
 int request() {
     Demand * d = malloc(sizeof (Demand));

@@ -1,21 +1,23 @@
+#include <unistd.h>
+#include <sys/types.h> 
 #include <semaphore.h>
-#include <time.h>
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
-#include <signal.h>
-#include <pthread.h>
-#include <unistd.h>
+#include <signal.h> 
+#include <time.h>
 #include "file_handler.h"
 #include "process.h"
 #include "queue.h"
-#include "coordinator.h"
 #include "communication.h"
-#include <time.h>
+#include "coordinator.h"
+#include "sockets.h"
+
+#define MYPORT 3490
+#define SIZE_TO_SEND 1025
+#define MY_IP "127.0.0.1"
 
 int write_in_log(char* file_name, char* data) {
     time_t t = time(NULL);
@@ -59,22 +61,36 @@ int handle_process(int nb_processes) {
     Demand * d = malloc(sizeof (Demand));
     d->process_id = 0;
     d->will = "";
+    char* data = malloc(14);
+    int received = 0;
     create_queue(q, nb_processes);
     while (1) {
-        d = receive();
-        if (!strcmp(request, d->will)) {
+        received = receive(d);
+        if (received) {
+            data = "";
+            snprintf(data, 0, "%d %s", d->process_id, d->will);
+            write_in_log("log.txt", data);
+        }
+        if (!strcmp(REQUEST, d->will)) {
             if (empty(q)) {
                 d->will = GRANT;
                 send(d);
+                data = "";
+                snprintf(data, 0, "%s %s", "COORD", GRANT);
+                write_in_log("log.txt", data);
             }
             add(q, d->process_id);
-        } else if (!strcmp(release, d->will)) {
+        } else if (!strcmp(RELEASE, d->will)) {
             pop(q);
             if (!empty(q)) {
 
                 d->process_id = head(q);
                 d->will = GRANT;
                 send(d);
+                data = "";
+                snprintf(data, 0, "%s %s", "COORD", GRANT);
+                write_in_log("log.txt", data);
+
             }
         }
     }
